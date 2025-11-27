@@ -1,0 +1,74 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="card-title text-2xl">TV Control</h2>
+            <a href="{{ url_for('admin.tv') }}" target="_blank" class="btn btn-primary btn-sm">
+                Open TV View
+            </a>
+        </div>
+
+        <p class="text-base-content/70 mb-6">Select what to display on the TV screen. Changes take effect immediately.</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- Auto Mode -->
+            <form action="{{ url_for('admin.set_tv_mode', key=admin_key) }}" method="POST">
+                <input type="hidden" name="mode" value="auto">
+                <button type="submit" class="btn btn-lg w-full h-24 flex-col {% if tv_mode == 'auto' %}btn-primary{% else %}btn-outline{% endif %}">
+                    <span class="text-2xl">🔄</span>
+                    <span>Auto</span>
+                </button>
+            </form>
+
+            <!-- Question Mode -->
+            <form action="{{ url_for('admin.set_tv_mode', key=admin_key) }}" method="POST">
+                <input type="hidden" name="mode" value="question">
+                <button type="submit" class="btn btn-lg w-full h-24 flex-col {% if tv_mode == 'question' %}btn-primary{% else %}btn-outline{% endif %}">
+                    <span class="text-2xl">❓</span>
+                    <span>Question</span>
+                </button>
+            </form>
+
+            <!-- Results Mode -->
+            <form action="{{ url_for('admin.set_tv_mode', key=admin_key) }}" method="POST">
+                <input type="hidden" name="mode" value="results">
+                <button type="submit" class="btn btn-lg w-full h-24 flex-col {% if tv_mode == 'results' %}btn-primary{% else %}btn-outline{% endif %}">
+                    <span class="text-2xl">📊</span>
+                    <span>Results</span>
+                </button>
+            </form>
+
+            <!-- Onboard Mode -->
+            <form action="{{ url_for('admin.set_tv_mode', key=admin_key) }}" method="POST">
+                <input type="hidden" name="mode" value="onboard">
+                <button type="submit" class="btn btn-lg w-full h-24 flex-col {% if tv_mode == 'onboard' %}btn-primary{% else %}btn-outline{% endif %}">
+                    <span class="text-2xl">👋</span>
+                    <span>Join Game</span>
+                </button>
+            </form>
+
+            <!-- Propose Mode -->
+            <form action="{{ url_for('admin.set_tv_mode', key=admin_key) }}" method="POST">
+                <input type="hidden" name="mode" value="propose">
+                <button type="submit" class="btn btn-lg w-full h-24 flex-col {% if tv_mode == 'propose' %}btn-primary{% else %}btn-outline{% endif %}">
+                    <span class="text-2xl">💡</span>
+                    <span>Propose</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="mt-6 p-4 bg-base-200 rounded-lg">
+            <h3 class="font-semibold mb-2">Mode Descriptions</h3>
+            <ul class="text-sm text-base-content/70 space-y-1">
+                <li><strong>Auto:</strong> Shows active question or last results automatically</li>
+                <li><strong>Question:</strong> Shows current active question (or waiting if none)</li>
+                <li><strong>Results:</strong> Shows results from last closed question</li>
+                <li><strong>Join Game:</strong> Shows instructions for new players to join</li>
+                <li><strong>Propose:</strong> Shows instructions for proposing questions</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

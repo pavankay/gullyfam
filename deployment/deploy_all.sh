@@ -130,6 +130,25 @@ fi
 
 echo ""
 
+# 5b. Create Firestore Indexes (idempotent)
+echo -e "${GREEN}[5b/8] Creating Firestore indexes...${NC}"
+echo "Checking and creating required composite indexes..."
+
+# Index for: questions collection - status + created_at (for get_last_closed_question)
+echo -n "  • questions: status + created_at... "
+if gcloud firestore indexes composite create \
+    --project=$GCP_PROJECT_ID \
+    --collection-group=questions \
+    --field-config=field-path=status,order=ASCENDING \
+    --field-config=field-path=created_at,order=DESCENDING \
+    --async 2>&1 | grep -q "already exists"; then
+    echo -e "${YELLOW}already exists${NC}"
+else
+    echo -e "${GREEN}created (building in background)${NC}"
+fi
+
+echo ""
+
 # 6. Create GCS Storage Bucket (idempotent)
 echo -e "${GREEN}[6/6] Creating GCS storage bucket...${NC}"
 
@@ -165,6 +184,11 @@ else
     echo "FIREBASE_STORAGE_BUCKET=$BUCKET_NAME" >> .env
     echo "Added FIREBASE_STORAGE_BUCKET to .env"
 fi
+
+# Make bucket publicly readable (for selfies and question images)
+echo "Making bucket publicly readable..."
+gsutil iam ch allUsers:objectViewer gs://$BUCKET_NAME 2>/dev/null || echo "Bucket already public or permission set"
+echo -e "${GREEN}✓ Bucket is publicly readable${NC}"
 
 echo ""
 

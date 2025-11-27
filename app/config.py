@@ -37,6 +37,7 @@ class Config:
         PARTICIPANTS = 'participants'
         QUESTIONS = 'questions'
         ANSWERS = 'answers'
+        SETTINGS = 'settings'
 
     # User Role Constants
     class UserRoles:

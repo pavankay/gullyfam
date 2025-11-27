@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="autumn">
+<html lang="en" data-theme="coffee">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="5">
     <title>Gullyfam Game - TV</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        body {
-            overflow: hidden;
-        }
+        body { overflow: hidden; }
         .tv-container {
             height: 100vh;
             display: grid;
@@ -18,16 +17,61 @@
             gap: 1rem;
             padding: 1rem;
         }
-        .question-section {
-            display: flex;
-            flex-direction: column;
-        }
-        .leaderboard-section {
-            overflow-y: auto;
+        .question-section { display: flex; flex-direction: column; }
+        .leaderboard-section { overflow-y: auto; }
+        .full-screen {
+            grid-template-columns: 1fr;
         }
     </style>
 </head>
 <body class="bg-base-200">
+    {% if tv_mode == 'onboard' %}
+    <!-- ONBOARD MODE: Join Instructions -->
+    <div class="tv-container full-screen">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body items-center justify-center text-center">
+                <figure class="mb-8">
+                    <img src="{{ url_for('static', filename='css/images/gullyfam.jpg') }}" alt="Gullyfam" class="max-h-72 rounded-lg mx-auto">
+                </figure>
+                <h1 class="text-6xl font-bold mb-6">Join the Game!</h1>
+                <div class="bg-white p-4 rounded-2xl mb-6">
+                    <img src="{{ url_for('static', filename='css/images/qrcode.png') }}" alt="Scan to join" class="w-64 h-64 mx-auto">
+                </div>
+                <p class="text-2xl text-base-content/70">Scan to join!</p>
+                <div class="text-2xl text-base-content/60 space-y-2">
+                    <p>1. Enter your name</p>
+                    <p>2. Take a selfie (optional)</p>
+                    <p>3. Start playing!</p>
+                </div>
+                <p class="text-lg text-base-content/50 mt-8">{{ participant_count }} players already joined</p>
+            </div>
+        </div>
+    </div>
+
+    {% elif tv_mode == 'propose' %}
+    <!-- PROPOSE MODE: How to Propose Questions -->
+    <div class="tv-container full-screen">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body items-center justify-center text-center">
+                <div class="text-8xl mb-6">💡</div>
+                <h1 class="text-6xl font-bold mb-6">Propose a Question!</h1>
+                <div class="text-2xl text-base-content/70 space-y-4 max-w-2xl">
+                    <p>Got a fun question for the group?</p>
+                    <div class="bg-base-200 px-8 py-6 rounded-2xl mt-6">
+                        <p class="text-xl mb-4">On your phone:</p>
+                        <p class="text-3xl font-bold text-primary">Tap "Propose" tab</p>
+                    </div>
+                    <div class="mt-8 text-xl text-base-content/60 space-y-2">
+                        <p><strong>Vote questions:</strong> "Who is most likely to..."</p>
+                        <p><strong>Trivia questions:</strong> "Who was born in..." or "Guess the baby photo"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- QUESTION/RESULTS/AUTO MODE -->
     <div class="tv-container">
         <!-- Left Side: Question & Results -->
         <div class="question-section">
@@ -39,50 +83,103 @@
                         <span class="badge badge-lg {% if question.type == 'trivia' %}badge-secondary{% else %}badge-accent{% endif %}">
                             {{ question.type|title }}
                         </span>
+                        {% if question.status == 'active' %}
+                        <span class="badge badge-primary badge-lg animate-pulse">LIVE</span>
+                        {% else %}
+                        <span class="badge badge-success badge-lg">RESULTS</span>
+                        {% endif %}
                         <span class="badge badge-outline badge-lg">{{ answer_count }} / {{ participant_count }} answered</span>
                     </div>
+
                     <h1 class="text-4xl font-bold">{{ question.text }}</h1>
+
+                    {% if question.status == 'active' %}
+                    <!-- ACTIVE: Show question image only -->
                     {% if question.image_url %}
                     <figure class="mt-4">
-                        <img src="{{ question.image_url }}" alt="Question image" class="rounded-lg max-h-64">
+                        <img src="{{ question.image_url }}" alt="Question image" class="rounded-lg max-h-72 mx-auto">
                     </figure>
                     {% endif %}
-                </div>
-            </div>
 
-            <!-- Results -->
-            {% if results %}
-            <div class="card bg-base-100 shadow-xl flex-grow overflow-y-auto">
-                <div class="card-body">
-                    <h2 class="card-title text-2xl mb-4">Results</h2>
-                    <div class="space-y-3">
-                        {% for result in results %}
-                        <div class="flex items-center gap-4">
-                            <div class="avatar placeholder">
-                                <div class="bg-neutral text-neutral-content rounded-full w-12">
-                                    {% if result.selfie_url %}
-                                    <img src="{{ result.selfie_url }}" alt="{{ result.name }}">
+                    <!-- Waiting for answers -->
+                    <div class="text-center mt-8">
+                        <div class="text-6xl mb-4">🤔</div>
+                        <p class="text-2xl text-base-content/70">Waiting for answers...</p>
+                    </div>
+
+                    {% else %}
+                    <!-- CLOSED: Show results -->
+
+                    {% if question.type == 'trivia' %}
+                    <!-- TRIVIA RESULTS -->
+                    <div class="mt-6">
+                        <h2 class="text-2xl font-bold text-center mb-4">The Answer Is...</h2>
+
+                        {% if correct_participant %}
+                        <div class="flex flex-col items-center">
+                            <!-- Show answer/reveal image if available -->
+                            {% if question.answer_image_url %}
+                            <figure class="mb-4">
+                                <img src="{{ question.answer_image_url }}" alt="Answer reveal" class="rounded-lg max-h-64">
+                            </figure>
+                            {% endif %}
+
+                            <div class="avatar mb-4">
+                                <div class="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                                    {% if correct_participant.selfie_url %}
+                                    <img src="{{ correct_participant.selfie_url }}" alt="{{ correct_participant.name }}">
                                     {% else %}
-                                    <span class="text-xl">{{ result.name[0] }}</span>
+                                    <div class="bg-neutral text-neutral-content flex items-center justify-center text-4xl">
+                                        {{ correct_participant.name[0] }}
+                                    </div>
                                     {% endif %}
                                 </div>
                             </div>
-                            <div class="flex-grow">
-                                <p class="font-semibold text-lg">{{ result.name }}</p>
-                                <progress class="progress progress-primary w-full" value="{{ result.votes }}" max="{{ answer_count or 1 }}"></progress>
-                            </div>
-                            <div class="badge badge-primary badge-lg">{{ result.votes }} votes</div>
+                            <h3 class="text-3xl font-bold">{{ correct_participant.name }}</h3>
                         </div>
-                        {% endfor %}
+                        {% else %}
+                        <p class="text-center text-xl">No correct answer was set</p>
+                        {% endif %}
                     </div>
+
+                    {% else %}
+                    <!-- VOTE RESULTS -->
+                    {% if results %}
+                    <div class="mt-6">
+                        <h2 class="text-2xl font-bold mb-4">Results</h2>
+                        <div class="space-y-3">
+                            {% for result in results %}
+                            <div class="flex items-center gap-4">
+                                <div class="avatar placeholder">
+                                    <div class="bg-neutral text-neutral-content rounded-full w-12">
+                                        {% if result.selfie_url %}
+                                        <img src="{{ result.selfie_url }}" alt="{{ result.name }}">
+                                        {% else %}
+                                        <span class="text-xl">{{ result.name[0] }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <p class="font-semibold text-lg">{{ result.name }}</p>
+                                    <progress class="progress progress-primary w-full" value="{{ result.votes }}" max="{{ answer_count or 1 }}"></progress>
+                                </div>
+                                <div class="badge badge-primary badge-lg">{{ result.votes }} votes</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
             {% else %}
             <!-- No Active Question -->
             <div class="card bg-base-100 shadow-xl flex-grow">
                 <div class="card-body items-center justify-center text-center">
-                    <div class="text-9xl mb-6">🦃</div>
+                    <figure class="mb-6">
+                        <img src="{{ url_for('static', filename='css/images/gullyfam.jpg') }}" alt="Gullyfam" class="max-h-64 rounded-lg mx-auto">
+                    </figure>
                     <h1 class="text-5xl font-bold">Gullyfam Game</h1>
                     <p class="text-2xl text-base-content/70 mt-4">Waiting for next question...</p>
                     <p class="text-lg text-base-content/50 mt-2">{{ participant_count }} players ready!</p>
@@ -143,5 +240,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </body>
 </html>

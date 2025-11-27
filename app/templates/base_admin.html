@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="coffee">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin - Gullyfam Game{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="min-h-screen bg-base-200">
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 shadow-lg">
+        <div class="navbar-start">
+            <span class="text-xl font-bold text-primary">Admin Panel</span>
+        </div>
+        <div class="navbar-center">
+            <div class="tabs tabs-boxed">
+                <a href="{{ url_for('admin.questions', key=admin_key) }}"
+                   class="tab {% if request.endpoint == 'admin.questions' %}tab-active{% endif %}">
+                    Questions
+                </a>
+                <a href="{{ url_for('admin.participants', key=admin_key) }}"
+                   class="tab {% if request.endpoint == 'admin.participants' %}tab-active{% endif %}">
+                    Participants
+                </a>
+                <a href="{{ url_for('admin.tv_control', key=admin_key) }}"
+                   class="tab {% if request.endpoint == 'admin.tv_control' %}tab-active{% endif %}">
+                    TV Control
+                </a>
+            </div>
+        </div>
+        <div class="navbar-end gap-2">
+            <a href="{{ url_for('admin.tv') }}" target="_blank" class="btn btn-outline btn-sm">
+                TV View
+            </a>
+            <span class="badge badge-secondary">{{ participants|length }} players</span>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-4 py-6">
+        {% if request.args.get('error') %}
+        <div class="alert alert-error mb-4">
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

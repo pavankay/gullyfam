@@ -117,7 +117,7 @@ def reset_all_scores():
 # Question Functions
 # =============================================================================
 
-def create_question(text, question_type, correct_answer=None, proposed_by=None, image_file=None):
+def create_question(text, question_type, correct_answer=None, proposed_by=None, image_file=None, answer_image_file=None):
     """
     Create a new question.
 
@@ -126,27 +126,38 @@ def create_question(text, question_type, correct_answer=None, proposed_by=None, 
         question_type: 'trivia' or 'vote'
         correct_answer: participant_id for trivia questions
         proposed_by: participant_id who proposed it
-        image_file: Optional image file
+        image_file: Optional question image (e.g., silhouette)
+        answer_image_file: Optional answer/reveal image (for trivia)
 
     Returns:
         dict: Created question data with id
     """
+    import uuid
+
     image_url = None
+    answer_image_url = None
 
     if image_file and image_file.filename:
-        import uuid
         gcs_path, _, _ = storage_service.upload_file(
             f"questions/{str(uuid.uuid4())[:8]}",
             image_file,
             image_file.filename
         )
-        # Store full public URL
         image_url = f"https://storage.googleapis.com/{Config.FIREBASE_STORAGE_BUCKET}/{gcs_path}"
+
+    if answer_image_file and answer_image_file.filename:
+        gcs_path, _, _ = storage_service.upload_file(
+            f"questions/{str(uuid.uuid4())[:8]}_answer",
+            answer_image_file,
+            answer_image_file.filename
+        )
+        answer_image_url = f"https://storage.googleapis.com/{Config.FIREBASE_STORAGE_BUCKET}/{gcs_path}"
 
     question_data = {
         'text': text,
         'type': question_type,
         'image_url': image_url,
+        'answer_image_url': answer_image_url,
         'correct_answer': correct_answer,
         'status': 'pending',
         'proposed_by': proposed_by,
@@ -183,6 +194,17 @@ def get_active_question():
         Config.Collections.QUESTIONS,
         filters=[('status', '==', 'active')]
     )
+
+
+def get_last_closed_question():
+    """Get the most recently closed question (for showing results)."""
+    results = firebase_service.query_docs(
+        Config.Collections.QUESTIONS,
+        filters=[('status', '==', 'closed')],
+        order_by=('created_at', 'DESCENDING'),
+        limit=1
+    )
+    return results[0] if results else None
 
 
 def activate_question(question_id):
@@ -355,3 +377,31 @@ def get_public_url(gcs_path):
         return None
     bucket = Config.FIREBASE_STORAGE_BUCKET
     return f"https://storage.googleapis.com/{bucket}/{gcs_path}"
+
+
+# =============================================================================
+# TV Mode Functions
+# =============================================================================
+
+TV_MODE_DOC_ID = 'tv_mode'
+VALID_TV_MODES = ['auto', 'question', 'results', 'onboard', 'propose']
+
+
+def get_tv_mode():
+    """Get current TV display mode. Defaults to 'auto'."""
+    doc = firebase_service.get_doc(Config.Collections.SETTINGS, TV_MODE_DOC_ID)
+    if doc:
+        return doc.get('mode', 'auto')
+    return 'auto'
+
+
+def set_tv_mode(mode):
+    """Set TV display mode."""
+    if mode not in VALID_TV_MODES:
+        raise ValueError(f"Invalid TV mode: {mode}. Must be one of {VALID_TV_MODES}")
+
+    db = firebase_service.get_firestore_client()
+    db.collection(Config.Collections.SETTINGS).document(TV_MODE_DOC_ID).set({
+        'mode': mode,
+        'updated_at': datetime.utcnow().isoformat()
+    })

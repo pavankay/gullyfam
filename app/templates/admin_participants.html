@@ -1,0 +1,60 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="card-title text-2xl">Participants</h2>
+            <form action="{{ url_for('admin.reset_scores', key=admin_key) }}" method="POST" onsubmit="return confirm('Reset all scores to 0?')">
+                <button type="submit" class="btn btn-outline btn-error btn-sm">Reset Scores</button>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="table table-compact w-full">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Player</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in participants %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="avatar placeholder">
+                                    <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                        {% if p.selfie_url %}
+                                        <img src="{{ p.selfie_url }}" alt="{{ p.name }}">
+                                        {% else %}
+                                        <span>{{ p.name[0] }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">{{ p.name }}</p>
+                                    <p class="text-xs text-base-content/50 truncate max-w-[150px]">{{ p.id }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary badge-lg">{{ p.score }}</span>
+                        </td>
+                        <td>
+                            <form action="{{ url_for('admin.delete_participant', key=admin_key) }}" method="POST" onsubmit="return confirm('Delete {{ p.name }}?')">
+                                <input type="hidden" name="participant_id" value="{{ p.id }}">
+                                <button type="submit" class="btn btn-error btn-xs">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

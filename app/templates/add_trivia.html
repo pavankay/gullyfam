@@ -1,0 +1,96 @@
+{% extends "base_player.html" %}
+
+{% block title %}Add Trivia Question - Gullyfam Game{% endblock %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl justify-center mb-2">Add Trivia Question</h2>
+        <p class="text-center text-base-content/70 mb-6">
+            Questions with a correct answer - guess the baby photo, who was born in...
+        </p>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            <!-- Question Text -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold text-lg">Your Question</span>
+                </label>
+                <textarea name="text"
+                          placeholder="e.g., Guess whose baby photo this is!"
+                          class="textarea textarea-bordered textarea-secondary w-full text-lg h-24"
+                          required></textarea>
+            </div>
+
+            <!-- Question Image -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Question Image</span>
+                    <span class="label-text-alt text-secondary">Shown during voting</span>
+                </label>
+                <input type="file" name="image" accept="image/*"
+                       class="file-input file-input-bordered file-input-secondary w-full">
+                <label class="label">
+                    <span class="label-text-alt">e.g., Baby photo, silhouette, clue image</span>
+                </label>
+            </div>
+
+            <!-- Answer/Reveal Image -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Answer/Reveal Image</span>
+                    <span class="label-text-alt text-success">Shown after reveal</span>
+                </label>
+                <input type="file" name="answer_image" accept="image/*"
+                       class="file-input file-input-bordered file-input-success w-full">
+                <label class="label">
+                    <span class="label-text-alt">e.g., Current photo for comparison, answer reveal</span>
+                </label>
+            </div>
+
+            <!-- Correct Answer -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Correct Answer</span>
+                </label>
+                <select name="correct_answer" class="select select-bordered select-secondary w-full" required>
+                    <option value="" disabled selected>Select the correct person...</option>
+                    {% for p in participants %}
+                    <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+                <label class="label">
+                    <span class="label-text-alt">Who is the answer to this question?</span>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-secondary btn-lg w-full">
+                Submit Trivia Question
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Example Questions -->
+<div class="card bg-base-100 shadow-xl mt-6">
+    <div class="card-body">
+        <h3 class="card-title text-lg">Trivia Question Ideas:</h3>
+        <ul class="list-disc list-inside text-base-content/70 space-y-2 mt-2">
+            <li>Guess whose baby photo this is!</li>
+            <li>Who was born in [city/year]?</li>
+            <li>Who had this hairstyle in high school?</li>
+            <li>Whose childhood pet is this?</li>
+            <li>Who said this embarrassing quote?</li>
+        </ul>
+    </div>
+</div>
+
+{% if participant %}
+<div class="mt-6 text-center">
+    <a href="{{ url_for('player.propose', player_id=participant.id) }}" class="btn btn-ghost">
+        Back to Propose
+    </a>
+</div>
+{% endif %}
+{% endblock %}

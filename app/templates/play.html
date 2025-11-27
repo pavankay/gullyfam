@@ -56,7 +56,9 @@
 <!-- No Active Question -->
 <div class="card bg-base-100 shadow-xl">
     <div class="card-body items-center text-center">
-        <div class="text-6xl mb-4">🦃</div>
+        <figure class="mb-4">
+            <img src="{{ url_for('static', filename='css/images/gullyfam.jpg') }}" alt="Gullyfam" class="max-h-48 rounded-lg mx-auto">
+        </figure>
         <h2 class="card-title text-2xl">Waiting for next question...</h2>
         <p class="text-base-content/70 mt-2">The game host will start the next question soon!</p>
         <p class="text-sm text-base-content/50 mt-4">Keep this page open and refresh when announced</p>

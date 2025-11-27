@@ -5,6 +5,7 @@ Routes for player-facing pages: onboarding, play, settings, propose.
 All routes render server-side templates with form submissions.
 """
 
+import traceback
 from flask import Blueprint, render_template, request, redirect, url_for
 from app.services import game_service
 
@@ -196,3 +197,133 @@ def propose(player_id):
             )
 
     return render_template('propose.html', participant=participant, message=message)
+
+
+# =============================================================================
+# Add Vote Question
+# =============================================================================
+
+@bp.route('/add-vote', methods=['GET', 'POST'])
+@bp.route('/add-vote/<player_id>', methods=['GET', 'POST'])
+def add_vote(player_id=None):
+    """
+    Add vote question page.
+
+    GET: Show form
+    POST: Create vote question
+    """
+    participant = None
+    if player_id:
+        participant = game_service.get_participant(player_id)
+        if not participant:
+            return redirect(url_for('player.onboard'))
+
+    if request.method == 'POST':
+        try:
+            text = request.form.get('text', '').strip()
+            if not text:
+                return render_template(
+                    'add_vote.html',
+                    participant=participant,
+                    error='Please enter a question'
+                )
+
+            image_file = request.files.get('image')
+
+            game_service.create_question(
+                text=text,
+                question_type='vote',
+                proposed_by=player_id,
+                image_file=image_file if image_file and image_file.filename else None
+            )
+
+            # Redirect back appropriately
+            if participant:
+                return redirect(url_for('player.propose', player_id=player_id))
+            else:
+                return redirect(url_for('admin.questions', key=request.args.get('key', '')))
+
+        except Exception as e:
+            import traceback
+            return render_template(
+                'add_vote.html',
+                participant=participant,
+                error=str(e),
+                traceback=traceback.format_exc()
+            )
+
+    return render_template('add_vote.html', participant=participant)
+
+
+# =============================================================================
+# Add Trivia Question
+# =============================================================================
+
+@bp.route('/add-trivia', methods=['GET', 'POST'])
+@bp.route('/add-trivia/<player_id>', methods=['GET', 'POST'])
+def add_trivia(player_id=None):
+    """
+    Add trivia question page.
+
+    GET: Show form
+    POST: Create trivia question
+    """
+    participant = None
+    if player_id:
+        participant = game_service.get_participant(player_id)
+        if not participant:
+            return redirect(url_for('player.onboard'))
+
+    # Need all participants for correct answer dropdown
+    all_participants = game_service.get_all_participants()
+
+    if request.method == 'POST':
+        try:
+            text = request.form.get('text', '').strip()
+            correct_answer = request.form.get('correct_answer')
+
+            if not text:
+                return render_template(
+                    'add_trivia.html',
+                    participant=participant,
+                    participants=all_participants,
+                    error='Please enter a question'
+                )
+
+            if not correct_answer:
+                return render_template(
+                    'add_trivia.html',
+                    participant=participant,
+                    participants=all_participants,
+                    error='Please select the correct answer'
+                )
+
+            image_file = request.files.get('image')
+            answer_image_file = request.files.get('answer_image')
+
+            game_service.create_question(
+                text=text,
+                question_type='trivia',
+                correct_answer=correct_answer,
+                proposed_by=player_id,
+                image_file=image_file if image_file and image_file.filename else None,
+                answer_image_file=answer_image_file if answer_image_file and answer_image_file.filename else None
+            )
+
+            # Redirect back appropriately
+            if participant:
+                return redirect(url_for('player.propose', player_id=player_id))
+            else:
+                return redirect(url_for('admin.questions', key=request.args.get('key', '')))
+
+        except Exception as e:
+            import traceback
+            return render_template(
+                'add_trivia.html',
+                participant=participant,
+                participants=all_participants,
+                error=str(e),
+                traceback=traceback.format_exc()
+            )
+
+    return render_template('add_trivia.html', participant=participant, participants=all_participants)

@@ -1,0 +1,66 @@
+{% extends "base_player.html" %}
+
+{% block title %}Add Vote Question - Gullyfam Game{% endblock %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl justify-center mb-2">Add Vote Question</h2>
+        <p class="text-center text-base-content/70 mb-6">
+            "Who is most likely to..." style questions where everyone votes
+        </p>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            <!-- Question Text -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold text-lg">Your Question</span>
+                </label>
+                <textarea name="text"
+                          placeholder="e.g., Who is most likely to eat all the turkey?"
+                          class="textarea textarea-bordered textarea-primary w-full text-lg h-32"
+                          required></textarea>
+            </div>
+
+            <!-- Optional Question Image -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Question Image (optional)</span>
+                </label>
+                <input type="file" name="image" accept="image/*"
+                       class="file-input file-input-bordered file-input-primary w-full">
+                <label class="label">
+                    <span class="label-text-alt">Add an image to go with your question</span>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-lg w-full">
+                Submit Vote Question
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Example Questions -->
+<div class="card bg-base-100 shadow-xl mt-6">
+    <div class="card-body">
+        <h3 class="card-title text-lg">Vote Question Ideas:</h3>
+        <ul class="list-disc list-inside text-base-content/70 space-y-2 mt-2">
+            <li>Who is most likely to fall asleep first after dinner?</li>
+            <li>Who is the biggest Thanksgiving leftovers hoarder?</li>
+            <li>Who gives the best hugs?</li>
+            <li>Who is most likely to suggest a group photo?</li>
+            <li>Who would survive longest in a zombie apocalypse?</li>
+        </ul>
+    </div>
+</div>
+
+{% if participant %}
+<div class="mt-6 text-center">
+    <a href="{{ url_for('player.propose', player_id=participant.id) }}" class="btn btn-ghost">
+        Back to Propose
+    </a>
+</div>
+{% endif %}
+{% endblock %}
