@@ -1,0 +1,58 @@
+{% extends "base_player.html" %}
+
+{% block title %}Propose Question - Gullyfam Game{% endblock %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl justify-center mb-4">Propose a Question</h2>
+        <p class="text-center text-base-content/70 mb-6">
+            Suggest a fun question for the game! The host will review and add it.
+        </p>
+
+        <form method="POST" class="space-y-4">
+            <!-- Question Text -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Your Question</span>
+                </label>
+                <textarea name="text" placeholder="e.g., Who is most likely to eat all the turkey?"
+                          class="textarea textarea-bordered textarea-primary w-full text-lg h-24"
+                          required></textarea>
+            </div>
+
+            <!-- Question Type -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Question Type</span>
+                </label>
+                <select name="type" class="select select-bordered select-primary w-full">
+                    <option value="vote" selected>Vote - Everyone picks who they think</option>
+                    <option value="trivia">Trivia - Has a correct answer</option>
+                </select>
+                <label class="label">
+                    <span class="label-text-alt">Vote questions = fun poll, Trivia = guessing game</span>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-lg w-full mt-6">
+                Submit Question
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Example Questions -->
+<div class="card bg-base-100 shadow-xl mt-6">
+    <div class="card-body">
+        <h3 class="card-title text-lg">Need ideas? Try these:</h3>
+        <ul class="list-disc list-inside text-base-content/70 space-y-2 mt-2">
+            <li>Who is most likely to fall asleep first after dinner?</li>
+            <li>Who is the biggest Thanksgiving leftovers hoarder?</li>
+            <li>Who gives the best hugs?</li>
+            <li>Who is most likely to suggest a group photo?</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,7 +1,7 @@
 """
-Flask GCP Starter Application
+Gullyfam Thanksgiving Party Game
 
-Minimal Flask app factory with GCP integration.
+Flask app for family party game with questions, voting, and leaderboard.
 """
 
 from flask import Flask
@@ -16,7 +16,7 @@ def create_app():
     Initializes:
     - Flask app with configuration
     - Firebase Admin SDK (Firestore)
-    - Routes (health check, authentication)
+    - Routes (player, admin, tv)
     """
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -26,8 +26,9 @@ def create_app():
     firebase_service.initialize_firebase()
 
     # Register route blueprints
-    from app.routes import health_routes, auth_routes
+    from app.routes import health_routes, player_routes, admin_routes
     app.register_blueprint(health_routes.bp)
-    app.register_blueprint(auth_routes.bp)
+    app.register_blueprint(player_routes.bp)
+    app.register_blueprint(admin_routes.bp)
 
     return app

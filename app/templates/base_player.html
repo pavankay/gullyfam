@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="autumn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gullyfam Game{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="min-h-screen bg-base-200">
+    {% if participant %}
+    <!-- Navigation for logged in players -->
+    <div class="navbar bg-base-100 shadow-lg">
+        <div class="navbar-start">
+            <span class="text-lg font-bold text-primary">{{ participant.name }}</span>
+        </div>
+        <div class="navbar-center">
+            <div class="tabs tabs-boxed">
+                <a href="{{ url_for('player.play', player_id=participant.id) }}"
+                   class="tab {% if request.endpoint == 'player.play' %}tab-active{% endif %}">
+                    Play
+                </a>
+                <a href="{{ url_for('player.settings', player_id=participant.id) }}"
+                   class="tab {% if request.endpoint == 'player.settings' %}tab-active{% endif %}">
+                    Settings
+                </a>
+                <a href="{{ url_for('player.propose', player_id=participant.id) }}"
+                   class="tab {% if request.endpoint == 'player.propose' %}tab-active{% endif %}">
+                    Propose
+                </a>
+            </div>
+        </div>
+        <div class="navbar-end">
+            <span class="badge badge-primary badge-lg">{{ participant.score }} pts</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 max-w-lg">
+        {% if error %}
+        <div class="alert alert-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ error }}</span>
+        </div>
+        {% if traceback %}
+        <details class="collapse collapse-arrow bg-base-100 mb-4">
+            <summary class="collapse-title font-medium">Error Details</summary>
+            <div class="collapse-content">
+                <pre class="text-xs overflow-auto">{{ traceback }}</pre>
+            </div>
+        </details>
+        {% endif %}
+        {% endif %}
+
+        {% if message %}
+        <div class="alert alert-success mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ message }}</span>
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

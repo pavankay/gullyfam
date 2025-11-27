@@ -1,0 +1,45 @@
+{% extends "base_player.html" %}
+
+{% block title %}Join Gullyfam Game{% endblock %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h1 class="card-title text-2xl justify-center mb-4">Join the Game!</h1>
+        <p class="text-center text-base-content/70 mb-6">Enter your name and take a selfie to get started</p>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            <!-- Name Input -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Your Name</span>
+                </label>
+                <input type="text" name="name" placeholder="Enter your name"
+                       class="input input-bordered input-primary w-full text-lg"
+                       required autofocus>
+            </div>
+
+            <!-- Selfie Input -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Selfie (Optional)</span>
+                </label>
+                <input type="file" name="selfie" accept="image/*" capture="user"
+                       class="file-input file-input-bordered file-input-primary w-full">
+                <label class="label">
+                    <span class="label-text-alt">Tap to take a selfie or choose a photo</span>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-lg w-full mt-6">
+                Join Game
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="text-center mt-6 text-base-content/50">
+    <p>Happy Thanksgiving!</p>
+</div>
+{% endblock %}

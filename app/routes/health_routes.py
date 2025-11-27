@@ -6,7 +6,6 @@ from app.config import Config
 bp = Blueprint('health', __name__)
 
 
-@bp.route('/')
 @bp.route('/health')
 def health_check():
     """

@@ -1,0 +1,60 @@
+{% extends "base_player.html" %}
+
+{% block title %}Settings - Gullyfam Game{% endblock %}
+
+{% block content %}
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl justify-center mb-4">Your Settings</h2>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            <!-- Name Input -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Your Name</span>
+                </label>
+                <input type="text" name="name" value="{{ participant.name }}"
+                       class="input input-bordered input-primary w-full text-lg">
+            </div>
+
+            <!-- Current Selfie -->
+            {% if participant.selfie_url %}
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Current Photo</span>
+                </label>
+                <div class="avatar">
+                    <div class="w-24 rounded-full">
+                        <img src="{{ participant.selfie_url }}" alt="Your selfie">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- New Selfie Input -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">{% if participant.selfie_url %}Change Photo{% else %}Add Photo{% endif %}</span>
+                </label>
+                <input type="file" name="selfie" accept="image/*" capture="user"
+                       class="file-input file-input-bordered file-input-primary w-full">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-lg w-full mt-6">
+                Save Settings
+            </button>
+        </form>
+
+        <!-- Player Link Info -->
+        <div class="divider"></div>
+        <div class="text-center">
+            <p class="text-sm text-base-content/70 mb-2">Your unique player link:</p>
+            <code class="bg-base-200 px-3 py-2 rounded text-xs break-all">
+                {{ request.url_root }}play/{{ participant.id }}
+            </code>
+            <p class="text-xs text-base-content/50 mt-2">Bookmark this link to return to your game!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

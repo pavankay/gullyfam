@@ -1,12 +1,12 @@
 #!/bin/bash
-# Flask GCP Starter - Idempotent Deployment Script
+# Gullyfam Game - Idempotent Deployment Script
 #
 # This script handles FRESH GCP project installs and does everything needed:
 # - Checks prerequisites
 # - Enables required APIs
 # - Configures IAM permissions
-# - Creates Firestore database
-# - Creates Cloud Storage bucket
+# - Creates Firestore database (for game data)
+# - Creates Cloud Storage bucket (for selfies/images)
 # - Builds and deploys to Cloud Run (using buildpacks - NO Docker!)
 #
 # IDEMPOTENT: Safe to run multiple times
@@ -28,7 +28,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   Flask GCP Starter Deployment v1.0   ║${NC}"
+echo -e "${BLUE}║   Gullyfam Game Deployment 🦃         ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -176,12 +176,14 @@ echo "Preparing environment variables..."
 FLASK_ENV=$(grep "^FLASK_ENV=" .env | cut -d= -f2 | tr -d ' ')
 SECRET_KEY=$(grep "^SECRET_KEY=" .env | cut -d= -f2 | tr -d ' ')
 FIREBASE_STORAGE_BUCKET=$(grep "^FIREBASE_STORAGE_BUCKET=" .env | cut -d= -f2 | tr -d ' ')
+ADMIN_SECRET=$(grep "^ADMIN_SECRET=" .env | cut -d= -f2 | tr -d ' ')
 
 echo "Environment variables configured:"
 echo "  • FLASK_ENV: $FLASK_ENV"
 echo "  • SECRET_KEY: ${SECRET_KEY:0:10}... (hidden)"
 echo "  • GCP_PROJECT_ID: $GCP_PROJECT_ID"
 echo "  • FIREBASE_STORAGE_BUCKET: $FIREBASE_STORAGE_BUCKET"
+echo "  • ADMIN_SECRET: ${ADMIN_SECRET:0:5}... (hidden)"
 echo ""
 echo "Note: PORT is set automatically by Cloud Run (8080)"
 echo ""
@@ -190,12 +192,12 @@ echo ""
 
 cd "$SCRIPT_DIR/.."
 
-gcloud run deploy flask-gcp-starter \
+gcloud run deploy gullyfam-game \
     --source . \
     --platform managed \
     --region us-central1 \
     --allow-unauthenticated \
-    --set-env-vars "FLASK_ENV=$FLASK_ENV,SECRET_KEY=$SECRET_KEY,GCP_PROJECT_ID=$GCP_PROJECT_ID,FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET" \
+    --set-env-vars "FLASK_ENV=$FLASK_ENV,SECRET_KEY=$SECRET_KEY,GCP_PROJECT_ID=$GCP_PROJECT_ID,FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,ADMIN_SECRET=$ADMIN_SECRET" \
     --project=$GCP_PROJECT_ID \
     --quiet
 
@@ -203,7 +205,7 @@ echo ""
 
 # 8. Get Service URL
 echo -e "${GREEN}[8/8] Retrieving service information...${NC}"
-SERVICE_URL=$(gcloud run services describe flask-gcp-starter \
+SERVICE_URL=$(gcloud run services describe gullyfam-game \
     --platform managed \
     --region us-central1 \
     --format 'value(status.url)' \
@@ -215,7 +217,7 @@ echo -e "${BLUE}╔════════════════════�
 echo -e "${BLUE}║      Deployment Complete! 🎉           ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "${GREEN}✓ Service Name:${NC} flask-gcp-starter"
+echo -e "${GREEN}✓ Service Name:${NC} gullyfam-game"
 echo -e "${GREEN}✓ Project ID:${NC} $GCP_PROJECT_ID"
 echo -e "${GREEN}✓ Region:${NC} us-central1"
 echo -e "${GREEN}✓ Service URL:${NC} ${BLUE}$SERVICE_URL${NC}"
@@ -223,26 +225,20 @@ echo ""
 
 # Next Steps
 echo -e "${YELLOW}╔════════════════════════════════════════╗${NC}"
-echo -e "${YELLOW}║     Next Steps                         ║${NC}"
+echo -e "${YELLOW}║     Gullyfam Game URLs                 ║${NC}"
 echo -e "${YELLOW}╚════════════════════════════════════════╝${NC}"
 echo ""
-echo "1. Test your deployment:"
-echo ""
-echo "   curl $SERVICE_URL/health"
-echo ""
-echo "   Or open in browser:"
+echo "1. Player Join Page (share with family):"
 echo "   $SERVICE_URL"
 echo ""
-echo "2. Test authentication:"
+echo "2. TV Display (open on TV):"
+echo "   $SERVICE_URL/tv"
 echo ""
-echo "   # Register a new user"
-echo "   curl -X POST $SERVICE_URL/api/auth/register \\"
-echo "     -H 'Content-Type: application/json' \\"
-echo "     -d '{\"email\":\"test@example.com\",\"password\":\"test123\",\"first_name\":\"Test\",\"last_name\":\"User\"}'"
+echo "3. Admin Panel (for game host):"
+echo "   $SERVICE_URL/admin?key=$ADMIN_SECRET"
 echo ""
-echo "3. View logs:"
+echo "4. View logs:"
+echo "   gcloud run services logs read gullyfam-game --project=$GCP_PROJECT_ID --region=us-central1"
 echo ""
-echo "   gcloud run services logs read flask-gcp-starter --project=$GCP_PROJECT_ID --region=us-central1"
-echo ""
-echo -e "${GREEN}Happy coding! 🚀${NC}"
+echo -e "${GREEN}Happy Thanksgiving! 🦃${NC}"
 echo ""

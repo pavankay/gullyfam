@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="autumn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gullyfam Game - TV</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            overflow: hidden;
+        }
+        .tv-container {
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .question-section {
+            display: flex;
+            flex-direction: column;
+        }
+        .leaderboard-section {
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-base-200">
+    <div class="tv-container">
+        <!-- Left Side: Question & Results -->
+        <div class="question-section">
+            {% if question %}
+            <!-- Current Question -->
+            <div class="card bg-base-100 shadow-xl mb-4 flex-shrink-0">
+                <div class="card-body">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="badge badge-lg {% if question.type == 'trivia' %}badge-secondary{% else %}badge-accent{% endif %}">
+                            {{ question.type|title }}
+                        </span>
+                        <span class="badge badge-outline badge-lg">{{ answer_count }} / {{ participant_count }} answered</span>
+                    </div>
+                    <h1 class="text-4xl font-bold">{{ question.text }}</h1>
+                    {% if question.image_url %}
+                    <figure class="mt-4">
+                        <img src="{{ question.image_url }}" alt="Question image" class="rounded-lg max-h-64">
+                    </figure>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Results -->
+            {% if results %}
+            <div class="card bg-base-100 shadow-xl flex-grow overflow-y-auto">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-4">Results</h2>
+                    <div class="space-y-3">
+                        {% for result in results %}
+                        <div class="flex items-center gap-4">
+                            <div class="avatar placeholder">
+                                <div class="bg-neutral text-neutral-content rounded-full w-12">
+                                    {% if result.selfie_url %}
+                                    <img src="{{ result.selfie_url }}" alt="{{ result.name }}">
+                                    {% else %}
+                                    <span class="text-xl">{{ result.name[0] }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="font-semibold text-lg">{{ result.name }}</p>
+                                <progress class="progress progress-primary w-full" value="{{ result.votes }}" max="{{ answer_count or 1 }}"></progress>
+                            </div>
+                            <div class="badge badge-primary badge-lg">{{ result.votes }} votes</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% else %}
+            <!-- No Active Question -->
+            <div class="card bg-base-100 shadow-xl flex-grow">
+                <div class="card-body items-center justify-center text-center">
+                    <div class="text-9xl mb-6">🦃</div>
+                    <h1 class="text-5xl font-bold">Gullyfam Game</h1>
+                    <p class="text-2xl text-base-content/70 mt-4">Waiting for next question...</p>
+                    <p class="text-lg text-base-content/50 mt-2">{{ participant_count }} players ready!</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Side: Leaderboard -->
+        <div class="leaderboard-section">
+            <div class="card bg-base-100 shadow-xl h-full">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-4">🏆 Leaderboard</h2>
+                    <div class="overflow-y-auto">
+                        <table class="table table-zebra">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in leaderboard %}
+                                <tr class="{% if loop.index <= 3 %}font-bold text-lg{% endif %}">
+                                    <td>
+                                        {% if loop.index == 1 %}🥇
+                                        {% elif loop.index == 2 %}🥈
+                                        {% elif loop.index == 3 %}🥉
+                                        {% else %}{{ loop.index }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar placeholder">
+                                                <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                                    {% if p.selfie_url %}
+                                                    <img src="{{ p.selfie_url }}" alt="{{ p.name }}">
+                                                    {% else %}
+                                                    <span>{{ p.name[0] }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {{ p.name }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if loop.index <= 3 %}badge-primary{% else %}badge-ghost{% endif %} badge-lg">
+                                            {{ p.score }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

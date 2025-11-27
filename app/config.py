@@ -27,11 +27,16 @@ class Config:
     GCP_PROJECT_ID = get_required_env('GCP_PROJECT_ID')
     FIREBASE_STORAGE_BUCKET = get_required_env('FIREBASE_STORAGE_BUCKET')
 
+    # Admin secret for admin panel access
+    ADMIN_SECRET = get_required_env('ADMIN_SECRET')
+
     # Firestore Collection Names
     class Collections:
         """Firestore collection name constants"""
         USERS = 'users'
-        # Add more collections as needed
+        PARTICIPANTS = 'participants'
+        QUESTIONS = 'questions'
+        ANSWERS = 'answers'
 
     # User Role Constants
     class UserRoles:

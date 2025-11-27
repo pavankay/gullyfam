@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="autumn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gullyfam Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="min-h-screen bg-base-200">
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 shadow-lg">
+        <div class="navbar-start">
+            <span class="text-xl font-bold text-primary">Admin Panel</span>
+        </div>
+        <div class="navbar-center">
+            <a href="{{ url_for('admin.tv') }}" target="_blank" class="btn btn-outline btn-sm">
+                Open TV View
+            </a>
+        </div>
+        <div class="navbar-end">
+            <span class="badge badge-secondary">{{ participants|length }} players</span>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-4 py-6">
+        {% if request.args.get('error') %}
+        <div class="alert alert-error mb-4">
+            <span>{{ request.args.get('error') }}</span>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Questions Section -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-4">Questions</h2>
+
+                    <!-- Add Question Form -->
+                    <form action="{{ url_for('admin.create_question', key=admin_key) }}" method="POST" enctype="multipart/form-data" class="mb-6 p-4 bg-base-200 rounded-lg">
+                        <h3 class="font-semibold mb-3">Add New Question</h3>
+                        <div class="form-control w-full mb-3">
+                            <input type="text" name="text" placeholder="Question text..." class="input input-bordered w-full" required>
+                        </div>
+                        <div class="flex gap-3 mb-3">
+                            <select name="type" class="select select-bordered flex-1">
+                                <option value="vote">Vote</option>
+                                <option value="trivia">Trivia</option>
+                            </select>
+                            <select name="correct_answer" class="select select-bordered flex-1">
+                                <option value="">Correct answer (trivia only)</option>
+                                {% for p in participants %}
+                                <option value="{{ p.id }}">{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-control w-full mb-3">
+                            <input type="file" name="image" accept="image/*" class="file-input file-input-bordered w-full">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Add Question</button>
+                    </form>
+
+                    <!-- Questions List -->
+                    <div class="overflow-x-auto">
+                        <table class="table table-compact w-full">
+                            <thead>
+                                <tr>
+                                    <th>Question</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for q in questions %}
+                                <tr class="{% if q.status == 'active' %}bg-primary/10{% endif %}">
+                                    <td class="max-w-xs">
+                                        <div class="truncate">{{ q.text }}</div>
+                                        {% if q.proposed_by %}
+                                        <span class="text-xs text-base-content/50">
+                                            by {{ participant_lookup.get(q.proposed_by, {}).get('name', 'Unknown') }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if q.type == 'trivia' %}badge-secondary{% else %}badge-accent{% endif %} badge-sm">
+                                            {{ q.type }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if q.status == 'active' %}badge-primary{% elif q.status == 'closed' %}badge-ghost{% else %}badge-warning{% endif %} badge-sm">
+                                            {{ q.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            {% if q.status == 'pending' %}
+                                            <form action="{{ url_for('admin.activate_question', key=admin_key) }}" method="POST" class="inline">
+                                                <input type="hidden" name="question_id" value="{{ q.id }}">
+                                                <button type="submit" class="btn btn-success btn-xs">Activate</button>
+                                            </form>
+                                            {% elif q.status == 'active' %}
+                                            <form action="{{ url_for('admin.close_question', key=admin_key) }}" method="POST" class="inline">
+                                                <input type="hidden" name="question_id" value="{{ q.id }}">
+                                                <button type="submit" class="btn btn-warning btn-xs">Close</button>
+                                            </form>
+                                            {% endif %}
+
+                                            {% if q.type == 'trivia' and q.status != 'closed' %}
+                                            <form action="{{ url_for('admin.update_question', key=admin_key) }}" method="POST" class="inline">
+                                                <input type="hidden" name="question_id" value="{{ q.id }}">
+                                                <select name="correct_answer" class="select select-bordered select-xs" onchange="this.form.submit()">
+                                                    <option value="">Set answer</option>
+                                                    {% for p in participants %}
+                                                    <option value="{{ p.id }}" {% if q.correct_answer == p.id %}selected{% endif %}>{{ p.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </form>
+                                            {% endif %}
+
+                                            <form action="{{ url_for('admin.delete_question', key=admin_key) }}" method="POST" class="inline" onsubmit="return confirm('Delete this question?')">
+                                                <input type="hidden" name="question_id" value="{{ q.id }}">
+                                                <button type="submit" class="btn btn-error btn-xs">Del</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Section -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="card-title text-2xl">Participants</h2>
+                        <form action="{{ url_for('admin.reset_scores', key=admin_key) }}" method="POST" onsubmit="return confirm('Reset all scores to 0?')">
+                            <button type="submit" class="btn btn-outline btn-error btn-sm">Reset Scores</button>
+                        </form>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="table table-compact w-full">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                    <th>Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in participants %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar placeholder">
+                                                <div class="bg-neutral text-neutral-content rounded-full w-8">
+                                                    {% if p.selfie_url %}
+                                                    <img src="{{ p.selfie_url }}" alt="{{ p.name }}">
+                                                    {% else %}
+                                                    <span>{{ p.name[0] }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold">{{ p.name }}</p>
+                                                <p class="text-xs text-base-content/50 truncate max-w-[150px]">{{ p.id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary badge-lg">{{ p.score }}</span>
+                                    </td>
+                                    <td>
+                                        <form action="{{ url_for('admin.delete_participant', key=admin_key) }}" method="POST" onsubmit="return confirm('Delete {{ p.name }}?')">
+                                            <input type="hidden" name="participant_id" value="{{ p.id }}">
+                                            <button type="submit" class="btn btn-error btn-xs">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
