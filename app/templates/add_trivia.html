@@ -7,7 +7,7 @@
     <div class="card-body">
         <h2 class="card-title text-2xl justify-center mb-2">Add Trivia Question</h2>
         <p class="text-center text-base-content/70 mb-6">
-            Questions with a correct answer - guess the baby photo, who was born in...
+            Multiple choice questions with one correct answer
         </p>
 
         <form method="POST" enctype="multipart/form-data" class="space-y-6">
@@ -17,7 +17,7 @@
                     <span class="label-text font-semibold text-lg">Your Question</span>
                 </label>
                 <textarea name="text"
-                          placeholder="e.g., Guess whose baby photo this is!"
+                          placeholder="e.g., What year was grandma born?"
                           class="textarea textarea-bordered textarea-secondary w-full text-lg h-24"
                           required></textarea>
             </div>
@@ -25,7 +25,7 @@
             <!-- Question Image -->
             <div class="form-control w-full">
                 <label class="label">
-                    <span class="label-text font-semibold">Question Image</span>
+                    <span class="label-text font-semibold">Question Image (optional)</span>
                     <span class="label-text-alt text-secondary">Shown during voting</span>
                 </label>
                 <input type="file" name="image" accept="image/*"
@@ -38,29 +38,54 @@
             <!-- Answer/Reveal Image -->
             <div class="form-control w-full">
                 <label class="label">
-                    <span class="label-text font-semibold">Answer/Reveal Image</span>
+                    <span class="label-text font-semibold">Answer/Reveal Image (optional)</span>
                     <span class="label-text-alt text-success">Shown after reveal</span>
                 </label>
                 <input type="file" name="answer_image" accept="image/*"
                        class="file-input file-input-bordered file-input-success w-full">
                 <label class="label">
-                    <span class="label-text-alt">e.g., Current photo for comparison, answer reveal</span>
+                    <span class="label-text-alt">e.g., Current photo for comparison</span>
                 </label>
             </div>
 
-            <!-- Correct Answer -->
+            <!-- Answer Options -->
             <div class="form-control w-full">
                 <label class="label">
-                    <span class="label-text font-semibold">Correct Answer</span>
+                    <span class="label-text font-semibold text-lg">Answer Options</span>
+                    <span class="label-text-alt">Select the correct one</span>
                 </label>
-                <select name="correct_answer" class="select select-bordered select-secondary w-full" required>
-                    <option value="" disabled selected>Select the correct person...</option>
-                    {% for p in participants %}
-                    <option value="{{ p.id }}">{{ p.name }}</option>
-                    {% endfor %}
-                </select>
+                <div class="space-y-3 mt-2">
+                    <!-- Option A -->
+                    <div class="flex items-center gap-3">
+                        <input type="radio" name="correct_option" value="0" class="radio radio-success" required>
+                        <span class="badge badge-outline">A</span>
+                        <input type="text" name="option_0" placeholder="Option A"
+                               class="input input-bordered flex-grow" required>
+                    </div>
+                    <!-- Option B -->
+                    <div class="flex items-center gap-3">
+                        <input type="radio" name="correct_option" value="1" class="radio radio-success">
+                        <span class="badge badge-outline">B</span>
+                        <input type="text" name="option_1" placeholder="Option B"
+                               class="input input-bordered flex-grow" required>
+                    </div>
+                    <!-- Option C -->
+                    <div class="flex items-center gap-3">
+                        <input type="radio" name="correct_option" value="2" class="radio radio-success">
+                        <span class="badge badge-outline">C</span>
+                        <input type="text" name="option_2" placeholder="Option C"
+                               class="input input-bordered flex-grow" required>
+                    </div>
+                    <!-- Option D -->
+                    <div class="flex items-center gap-3">
+                        <input type="radio" name="correct_option" value="3" class="radio radio-success">
+                        <span class="badge badge-outline">D</span>
+                        <input type="text" name="option_3" placeholder="Option D"
+                               class="input input-bordered flex-grow" required>
+                    </div>
+                </div>
                 <label class="label">
-                    <span class="label-text-alt">Who is the answer to this question?</span>
+                    <span class="label-text-alt text-success">Click the radio button next to the correct answer</span>
                 </label>
             </div>
 
@@ -77,11 +102,10 @@
     <div class="card-body">
         <h3 class="card-title text-lg">Trivia Question Ideas:</h3>
         <ul class="list-disc list-inside text-base-content/70 space-y-2 mt-2">
-            <li>Guess whose baby photo this is!</li>
-            <li>Who was born in [city/year]?</li>
+            <li>What year was grandma born? (1945 / 1950 / 1955 / 1960)</li>
+            <li>Guess whose baby photo this is! (Name A / Name B / Name C / Name D)</li>
             <li>Who had this hairstyle in high school?</li>
-            <li>Whose childhood pet is this?</li>
-            <li>Who said this embarrassing quote?</li>
+            <li>Where did mom and dad meet?</li>
         </ul>
     </div>
 </div>

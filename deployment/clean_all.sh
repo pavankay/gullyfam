@@ -45,25 +45,19 @@ fi
 
 echo ""
 echo -e "${GREEN}[1/4] Deleting Firestore: participants...${NC}"
-gcloud firestore documents delete \
+gcloud firestore bulk-delete \
     --project=$GCP_PROJECT_ID \
-    --collection-ids=participants \
-    --recursive \
-    --quiet 2>/dev/null || echo "  (collection may be empty)"
+    --collection-ids='participants' || echo "  (collection may be empty)"
 
 echo -e "${GREEN}[2/4] Deleting Firestore: questions...${NC}"
-gcloud firestore documents delete \
+gcloud firestore bulk-delete \
     --project=$GCP_PROJECT_ID \
-    --collection-ids=questions \
-    --recursive \
-    --quiet 2>/dev/null || echo "  (collection may be empty)"
+    --collection-ids='questions' || echo "  (collection may be empty)"
 
 echo -e "${GREEN}[3/4] Deleting Firestore: answers...${NC}"
-gcloud firestore documents delete \
+gcloud firestore bulk-delete \
     --project=$GCP_PROJECT_ID \
-    --collection-ids=answers \
-    --recursive \
-    --quiet 2>/dev/null || echo "  (collection may be empty)"
+    --collection-ids='answers' || echo "  (collection may be empty)"
 
 echo -e "${GREEN}[4/4] Deleting all files from Cloud Storage...${NC}"
 gsutil -m rm -r "gs://$BUCKET_NAME/**" 2>/dev/null || echo "  (bucket may be empty)"

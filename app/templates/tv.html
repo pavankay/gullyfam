@@ -115,7 +115,7 @@
                     <div class="mt-6">
                         <h2 class="text-2xl font-bold text-center mb-4">The Answer Is...</h2>
 
-                        {% if correct_participant %}
+                        {% if question.options and question.correct_option is not none %}
                         <div class="flex flex-col items-center">
                             <!-- Show answer/reveal image if available -->
                             {% if question.answer_image_url %}
@@ -124,18 +124,10 @@
                             </figure>
                             {% endif %}
 
-                            <div class="avatar mb-4">
-                                <div class="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                                    {% if correct_participant.selfie_url %}
-                                    <img src="{{ correct_participant.selfie_url }}" alt="{{ correct_participant.name }}">
-                                    {% else %}
-                                    <div class="bg-neutral text-neutral-content flex items-center justify-center text-4xl">
-                                        {{ correct_participant.name[0] }}
-                                    </div>
-                                    {% endif %}
-                                </div>
+                            <div class="bg-success text-success-content px-8 py-4 rounded-2xl mb-4">
+                                <span class="text-2xl font-bold">{{ ['A', 'B', 'C', 'D'][question.correct_option] }}.</span>
                             </div>
-                            <h3 class="text-3xl font-bold">{{ correct_participant.name }}</h3>
+                            <h3 class="text-4xl font-bold text-center">{{ question.options[question.correct_option] }}</h3>
                         </div>
                         {% else %}
                         <p class="text-center text-xl">No correct answer was set</p>

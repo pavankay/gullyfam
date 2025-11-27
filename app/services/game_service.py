@@ -117,17 +117,18 @@ def reset_all_scores():
 # Question Functions
 # =============================================================================
 
-def create_question(text, question_type, correct_answer=None, proposed_by=None, image_file=None, answer_image_file=None):
+def create_question(text, question_type, proposed_by=None, image_file=None, answer_image_file=None, options=None, correct_option=None):
     """
     Create a new question.
 
     Args:
         text: Question text
         question_type: 'trivia' or 'vote'
-        correct_answer: participant_id for trivia questions
         proposed_by: participant_id who proposed it
         image_file: Optional question image (e.g., silhouette)
         answer_image_file: Optional answer/reveal image (for trivia)
+        options: List of 4 answer options (for trivia)
+        correct_option: Index of correct option 0-3 (for trivia)
 
     Returns:
         dict: Created question data with id
@@ -158,7 +159,8 @@ def create_question(text, question_type, correct_answer=None, proposed_by=None, 
         'type': question_type,
         'image_url': image_url,
         'answer_image_url': answer_image_url,
-        'correct_answer': correct_answer,
+        'options': options,  # List of 4 options for trivia
+        'correct_option': correct_option,  # Index 0-3 for trivia
         'status': 'pending',
         'proposed_by': proposed_by,
         'created_at': datetime.utcnow().isoformat()
@@ -237,9 +239,10 @@ def close_question(question_id):
 
     if question['type'] == 'trivia':
         # Award 1 point for correct answers
-        correct_answer = question.get('correct_answer')
+        correct_option = question.get('correct_option')
         for answer in answers:
-            if answer['answer'] == correct_answer:
+            # Compare as strings since form data comes as string
+            if str(answer['answer']) == str(correct_option):
                 add_score(answer['participant_id'], 1)
                 # Update answer record
                 firebase_service.update_doc(
@@ -270,13 +273,15 @@ def delete_question(question_id):
     firebase_service.delete_doc(Config.Collections.QUESTIONS, question_id)
 
 
-def update_question(question_id, text=None, correct_answer=None):
+def update_question(question_id, text=None, options=None, correct_option=None):
     """Update question fields."""
     updates = {}
     if text:
         updates['text'] = text
-    if correct_answer is not None:
-        updates['correct_answer'] = correct_answer
+    if options is not None:
+        updates['options'] = options
+    if correct_option is not None:
+        updates['correct_option'] = correct_option
     if updates:
         firebase_service.update_doc(Config.Collections.QUESTIONS, question_id, updates)
 

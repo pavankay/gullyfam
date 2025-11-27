@@ -33,6 +33,24 @@
         {% else %}
         <!-- Answer Form -->
         <form method="POST" class="mt-4">
+            {% if question.type == 'trivia' and question.options %}
+            <!-- Trivia: Multiple Choice Options -->
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-semibold">Select your answer:</span>
+                </label>
+                <div class="space-y-3 mt-2">
+                    {% for option in question.options %}
+                    <label class="flex items-center gap-3 p-3 border border-base-300 rounded-lg cursor-pointer hover:bg-base-200 transition-colors">
+                        <input type="radio" name="answer" value="{{ loop.index0 }}" class="radio radio-secondary" required>
+                        <span class="badge badge-outline">{{ ['A', 'B', 'C', 'D'][loop.index0] }}</span>
+                        <span class="text-lg flex-grow">{{ option }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Vote: Participant Selection -->
             <div class="form-control w-full">
                 <label class="label">
                     <span class="label-text font-semibold">Select your answer:</span>
@@ -44,6 +62,7 @@
                     {% endfor %}
                 </select>
             </div>
+            {% endif %}
 
             <button type="submit" class="btn btn-primary btn-lg w-full mt-4">
                 Submit Answer

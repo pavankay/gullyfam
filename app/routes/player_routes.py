@@ -266,7 +266,7 @@ def add_trivia(player_id=None):
     Add trivia question page.
 
     GET: Show form
-    POST: Create trivia question
+    POST: Create trivia question with multiple choice options
     """
     participant = None
     if player_id:
@@ -274,27 +274,37 @@ def add_trivia(player_id=None):
         if not participant:
             return redirect(url_for('player.onboard'))
 
-    # Need all participants for correct answer dropdown
-    all_participants = game_service.get_all_participants()
-
     if request.method == 'POST':
         try:
             text = request.form.get('text', '').strip()
-            correct_answer = request.form.get('correct_answer')
+            correct_option = request.form.get('correct_option')
+
+            # Collect all 4 options
+            options = [
+                request.form.get('option_0', '').strip(),
+                request.form.get('option_1', '').strip(),
+                request.form.get('option_2', '').strip(),
+                request.form.get('option_3', '').strip(),
+            ]
 
             if not text:
                 return render_template(
                     'add_trivia.html',
                     participant=participant,
-                    participants=all_participants,
                     error='Please enter a question'
                 )
 
-            if not correct_answer:
+            if not all(options):
                 return render_template(
                     'add_trivia.html',
                     participant=participant,
-                    participants=all_participants,
+                    error='Please fill in all 4 answer options'
+                )
+
+            if correct_option is None:
+                return render_template(
+                    'add_trivia.html',
+                    participant=participant,
                     error='Please select the correct answer'
                 )
 
@@ -304,10 +314,11 @@ def add_trivia(player_id=None):
             game_service.create_question(
                 text=text,
                 question_type='trivia',
-                correct_answer=correct_answer,
                 proposed_by=player_id,
                 image_file=image_file if image_file and image_file.filename else None,
-                answer_image_file=answer_image_file if answer_image_file and answer_image_file.filename else None
+                answer_image_file=answer_image_file if answer_image_file and answer_image_file.filename else None,
+                options=options,
+                correct_option=int(correct_option)
             )
 
             # Redirect back appropriately
@@ -321,9 +332,8 @@ def add_trivia(player_id=None):
             return render_template(
                 'add_trivia.html',
                 participant=participant,
-                participants=all_participants,
                 error=str(e),
                 traceback=traceback.format_exc()
             )
 
-    return render_template('add_trivia.html', participant=participant, participants=all_participants)
+    return render_template('add_trivia.html', participant=participant)
