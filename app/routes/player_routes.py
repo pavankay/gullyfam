@@ -105,7 +105,8 @@ def play(player_id):
         question=question,
         all_participants=all_participants,
         already_answered=already_answered,
-        message=message
+        message=message,
+        refresh_seconds=5  # Auto-refresh to stay in sync
     )
 
 

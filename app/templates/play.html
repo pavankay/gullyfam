@@ -79,11 +79,8 @@
             <img src="{{ url_for('static', filename='css/images/gullyfam.jpg') }}" alt="Gullyfam" class="max-h-48 rounded-lg mx-auto">
         </figure>
         <h2 class="card-title text-2xl">Waiting for next question...</h2>
-        <p class="text-base-content/70 mt-2">The game host will start the next question soon!</p>
-        <p class="text-sm text-base-content/50 mt-4">Keep this page open and refresh when announced</p>
-        <button onclick="location.reload()" class="btn btn-outline btn-primary mt-4">
-            Refresh
-        </button>
+        <p class="text-base-content/70 mt-2">Watch the TV screen!</p>
+        <span class="loading loading-dots loading-lg mt-4"></span>
     </div>
 </div>
 {% endif %}

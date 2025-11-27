@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="5">
+    <meta http-equiv="refresh" content="{{ refresh_seconds }}">
     <title>Gullyfam Game - TV</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,45 +25,31 @@
     </style>
 </head>
 <body class="bg-base-200">
-    {% if tv_mode == 'onboard' %}
-    <!-- ONBOARD MODE: Join Instructions -->
+    {% if tv_display_mode == 'waiting' %}
+    <!-- WAITING MODE: Join + Propose Instructions -->
     <div class="tv-container full-screen">
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body items-center justify-center text-center">
-                <figure class="mb-8">
-                    <img src="{{ url_for('static', filename='css/images/gullyfam.jpg') }}" alt="Gullyfam" class="max-h-72 rounded-lg mx-auto">
-                </figure>
-                <h1 class="text-6xl font-bold mb-6">Join the Game!</h1>
-                <div class="bg-white p-4 rounded-2xl mb-6">
-                    <img src="{{ url_for('static', filename='css/images/qrcode.png') }}" alt="Scan to join" class="w-64 h-64 mx-auto">
-                </div>
-                <p class="text-2xl text-base-content/70">Scan to join!</p>
-                <div class="text-2xl text-base-content/60 space-y-2">
-                    <p>1. Enter your name</p>
-                    <p>2. Take a selfie (optional)</p>
-                    <p>3. Start playing!</p>
-                </div>
-                <p class="text-lg text-base-content/50 mt-8">{{ participant_count }} players already joined</p>
-            </div>
-        </div>
-    </div>
-
-    {% elif tv_mode == 'propose' %}
-    <!-- PROPOSE MODE: How to Propose Questions -->
-    <div class="tv-container full-screen">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body items-center justify-center text-center">
-                <div class="text-8xl mb-6">💡</div>
-                <h1 class="text-6xl font-bold mb-6">Propose a Question!</h1>
-                <div class="text-2xl text-base-content/70 space-y-4 max-w-2xl">
-                    <p>Got a fun question for the group?</p>
-                    <div class="bg-base-200 px-8 py-6 rounded-2xl mt-6">
-                        <p class="text-xl mb-4">On your phone:</p>
-                        <p class="text-3xl font-bold text-primary">Tap "Propose" tab</p>
+                <div class="flex items-center gap-8">
+                    <!-- Left: QR Code -->
+                    <div class="text-center">
+                        <div class="bg-white p-4 rounded-2xl mb-4">
+                            <img src="{{ url_for('static', filename='css/images/qrcode.png') }}" alt="Scan to join" class="w-48 h-48 mx-auto">
+                        </div>
+                        <p class="text-xl text-base-content/70">Scan to join!</p>
                     </div>
-                    <div class="mt-8 text-xl text-base-content/60 space-y-2">
-                        <p><strong>Vote questions:</strong> "Who is most likely to..."</p>
-                        <p><strong>Trivia questions:</strong> "Who was born in..." or "Guess the baby photo"</p>
+
+                    <!-- Divider -->
+                    <div class="divider divider-horizontal text-4xl">🎉</div>
+
+                    <!-- Right: Info -->
+                    <div class="text-left max-w-md">
+                        <h1 class="text-5xl font-bold mb-6">Gullyfam Game</h1>
+                        <p class="text-2xl text-base-content/70 mb-4">{{ participant_count }} players ready!</p>
+                        <div class="bg-base-200 px-6 py-4 rounded-xl">
+                            <p class="text-xl mb-2">💡 <strong>Got a question idea?</strong></p>
+                            <p class="text-lg text-base-content/70">Tap "Propose" on your phone!</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -85,6 +71,10 @@
                         </span>
                         {% if question.status == 'active' %}
                         <span class="badge badge-primary badge-lg animate-pulse">LIVE</span>
+                        <!-- Countdown Timer -->
+                        <span id="countdown" class="badge badge-warning badge-lg text-2xl px-4 py-3 font-mono">
+                            {{ '%d:%02d' | format(time_remaining // 60, time_remaining % 60) }}
+                        </span>
                         {% else %}
                         <span class="badge badge-success badge-lg">RESULTS</span>
                         {% endif %}
@@ -232,6 +222,28 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
+    <!-- JavaScript Countdown Timer -->
+    {% if time_remaining and time_remaining > 0 %}
+    <script>
+    let timeLeft = {{ time_remaining }};
+    const timerEl = document.getElementById('countdown');
+
+    function updateTimer() {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerEl.textContent = mins + ':' + secs.toString().padStart(2, '0');
+
+        if (timeLeft <= 0) {
+            location.reload();
+        } else {
+            timeLeft--;
+            setTimeout(updateTimer, 1000);
+        }
+    }
+    updateTimer();
+    </script>
     {% endif %}
 </body>
 </html>

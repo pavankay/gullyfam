@@ -25,76 +25,59 @@ def check_admin_key():
 @bp.route('/tv')
 def tv():
     """
-    TV display page - shows content based on admin-selected mode.
+    TV display page - auto-cycles through states based on question timing.
     No authentication required (public view for TV).
 
-    Modes:
-    - auto: Show active question or last results automatically
-    - question: Force show active question
-    - results: Force show last closed question results
-    - onboard: Show join instructions
-    - propose: Show propose instructions
+    States (auto-determined):
+    - waiting: No active question, results expired → show QR + join/propose
+    - question: Active question → show question + countdown timer
+    - results: Question just closed → show answer + leaderboard
     """
-    # Get TV mode setting
-    tv_mode = game_service.get_tv_mode()
-
     # Get all participants for leaderboard and count
     leaderboard = game_service.get_all_participants()
     participant_count = len(leaderboard)
     participant_lookup = {p['id']: p for p in leaderboard}
 
-    # Handle instruction modes first
-    if tv_mode in ['onboard', 'propose']:
+    # Get active question
+    active_question = game_service.get_active_question()
+
+    # AUTO-CLOSE: If active question has expired, close it
+    if active_question:
+        time_remaining = game_service.get_question_time_remaining(active_question)
+        if time_remaining <= 0:
+            game_service.close_question(active_question['id'])
+            active_question = None  # Now closed, will show results
+
+    # Get last closed question for results
+    closed_question = game_service.get_last_closed_question()
+
+    # Determine display mode based on state
+    if active_question:
+        # QUESTION MODE: Show question with countdown timer
+        time_remaining = game_service.get_question_time_remaining(active_question)
+        answers = game_service.get_answers_for_question(active_question['id'])
+        answer_count = len(answers)
+
         return render_template(
             'tv.html',
-            tv_mode=tv_mode,
-            question=None,
+            tv_display_mode='question',
+            question=active_question,
             show_results=False,
-            answer_count=0,
+            answer_count=answer_count,
+            time_remaining=time_remaining,
+            results_time=0,
             results=[],
             correct_participant=None,
             leaderboard=leaderboard,
-            participant_count=participant_count
+            participant_count=participant_count,
+            refresh_seconds=3
         )
 
-    # Get question data
-    active_question = game_service.get_active_question()
-    closed_question = game_service.get_last_closed_question()
+    elif closed_question:
+        results_time = game_service.get_results_time_remaining(closed_question)
 
-    # Determine what to show based on mode
-    if tv_mode == 'question' or (tv_mode == 'auto' and active_question):
-        # Show active question (or waiting if none)
-        if active_question:
-            answers = game_service.get_answers_for_question(active_question['id'])
-            answer_count = len(answers)
-            return render_template(
-                'tv.html',
-                tv_mode=tv_mode,
-                question=active_question,
-                show_results=False,
-                answer_count=answer_count,
-                results=[],
-                correct_participant=None,
-                leaderboard=leaderboard,
-                participant_count=participant_count
-            )
-        else:
-            # No active question - show waiting
-            return render_template(
-                'tv.html',
-                tv_mode=tv_mode,
-                question=None,
-                show_results=False,
-                answer_count=0,
-                results=[],
-                correct_participant=None,
-                leaderboard=leaderboard,
-                participant_count=participant_count
-            )
-
-    if tv_mode == 'results' or (tv_mode == 'auto' and closed_question):
-        # Show results
-        if closed_question:
+        if results_time > 0:
+            # RESULTS MODE: Show answer reveal + leaderboard
             results = game_service.get_vote_results(closed_question['id'])
             answers = game_service.get_answers_for_question(closed_question['id'])
             answer_count = len(answers)
@@ -104,27 +87,33 @@ def tv():
 
             return render_template(
                 'tv.html',
-                tv_mode=tv_mode,
+                tv_display_mode='results',
                 question=closed_question,
                 show_results=True,
                 answer_count=answer_count,
+                time_remaining=0,
+                results_time=results_time,
                 results=results,
                 correct_participant=correct_participant,
                 leaderboard=leaderboard,
-                participant_count=participant_count
+                participant_count=participant_count,
+                refresh_seconds=5
             )
 
-    # Default: show waiting screen
+    # WAITING MODE: No active question, results expired
     return render_template(
         'tv.html',
-        tv_mode=tv_mode,
+        tv_display_mode='waiting',
         question=None,
         show_results=False,
         answer_count=0,
+        time_remaining=0,
+        results_time=0,
         results=[],
         correct_participant=None,
         leaderboard=leaderboard,
-        participant_count=participant_count
+        participant_count=participant_count,
+        refresh_seconds=10
     )
 
 

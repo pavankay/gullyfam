@@ -217,14 +217,20 @@ def activate_question(question_id):
         firebase_service.update_doc(
             Config.Collections.QUESTIONS,
             current_active['id'],
-            {'status': 'closed'}
+            {
+                'status': 'closed',
+                'closed_at': datetime.utcnow().isoformat()
+            }
         )
 
-    # Activate the new question
+    # Activate the new question with timestamp
     firebase_service.update_doc(
         Config.Collections.QUESTIONS,
         question_id,
-        {'status': 'active'}
+        {
+            'status': 'active',
+            'activated_at': datetime.utcnow().isoformat()
+        }
     )
 
 
@@ -260,11 +266,14 @@ def close_question(question_id):
                 {'points_awarded': 1}
             )
 
-    # Mark question as closed
+    # Mark question as closed with timestamp
     firebase_service.update_doc(
         Config.Collections.QUESTIONS,
         question_id,
-        {'status': 'closed'}
+        {
+            'status': 'closed',
+            'closed_at': datetime.utcnow().isoformat()
+        }
     )
 
 
@@ -385,6 +394,14 @@ def get_public_url(gcs_path):
 
 
 # =============================================================================
+# Timing Constants
+# =============================================================================
+
+QUESTION_DURATION_SECONDS = 60
+RESULTS_DURATION_SECONDS = 60
+
+
+# =============================================================================
 # TV Mode Functions
 # =============================================================================
 
@@ -410,3 +427,35 @@ def set_tv_mode(mode):
         'mode': mode,
         'updated_at': datetime.utcnow().isoformat()
     })
+
+
+# =============================================================================
+# Time Remaining Helpers
+# =============================================================================
+
+def get_question_time_remaining(question):
+    """Get seconds remaining for active question. Returns 0 if expired."""
+    if not question or question.get('status') != 'active':
+        return 0
+    activated_at = question.get('activated_at')
+    if not activated_at:
+        return QUESTION_DURATION_SECONDS  # No timestamp, assume just started
+
+    activated = datetime.fromisoformat(activated_at)
+    elapsed = (datetime.utcnow() - activated).total_seconds()
+    remaining = QUESTION_DURATION_SECONDS - elapsed
+    return max(0, int(remaining))
+
+
+def get_results_time_remaining(question):
+    """Get seconds remaining to show results. Returns 0 if expired."""
+    if not question or question.get('status') != 'closed':
+        return 0
+    closed_at = question.get('closed_at')
+    if not closed_at:
+        return RESULTS_DURATION_SECONDS  # No timestamp, assume just closed
+
+    closed = datetime.fromisoformat(closed_at)
+    elapsed = (datetime.utcnow() - closed).total_seconds()
+    remaining = RESULTS_DURATION_SECONDS - elapsed
+    return max(0, int(remaining))
